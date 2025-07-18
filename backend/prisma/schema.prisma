@@ -1,0 +1,322 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Auth {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  password   String
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  profile                UserProfile?
+  refreshTokens          RefreshToken[]
+  emailVerificationToken EmailVerificationToken?
+  PasswordResetToken     PasswordResetToken?
+}
+
+model UserProfile {
+  id        String   @id @default(uuid())
+  firstName String
+  lastName  String
+  phone     String?
+  role      Role
+  authId    String   @unique
+  tenantId  String
+  auth      Auth     @relation(fields: [authId], references: [id])
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  authId    String   @unique
+  createdAt DateTime @default(now())
+  auth      Auth     @relation(fields: [authId], references: [id])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  authId    String   @unique
+  createdAt DateTime @default(now())
+
+  auth Auth @relation(fields: [authId], references: [id])
+}
+
+enum Role {
+  SUPEPR_ADMIN
+  ADMIN
+  ACCOUNTANT
+  STAFF
+  VIEWER
+}
+
+model Tenant {
+  id                String               @id @default(uuid())
+  name              String
+  slug              String               @unique // subdomain
+  gstNumber         String?
+  companyId         String?
+  logoUrl           String?
+  // Contact Info
+  email             String?
+  phone             String?
+  website           String?
+  supportEmail      String?
+  contactPersonName String?
+  // Address Info
+  addressLine1      String?
+  addressLine2      String?
+  city              String?
+  state             String?
+  pincode           String?
+  country           String?
+  // Other metadata
+  industry          String?
+  notes             String?
+  isActive          Boolean              @default(true)
+  trialEndsAt       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  // Relations
+  profiles          UserProfile[]
+  subscriptions     TenantSubscription[]
+  InventoryItem     InventoryItem[]
+  Customer          Customer[]
+  SalesOrder        SalesOrder[]
+  Invoice           Invoice[]
+  TenantCounter     TenantCounter?
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  authId    String
+  device    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  auth Auth @relation(fields: [authId], references: [id])
+}
+
+model TenantOnboardingSession {
+  id              String           @id @default(uuid())
+  email           String
+  password        String
+  company         String
+  phone           String
+  gstNumber       String?
+  paymentId       String?
+  isEmailVerified Boolean          @default(false)
+  cashfreeOrderId String           @unique
+  status          OnboardingStatus @default(PENDING)
+  createdAt       DateTime         @default(now())
+
+  // New fields aligned with updated tenant schema
+  contactPersonName String?
+  supportEmail      String?
+  website           String?
+  addressLine1      String?
+  addressLine2      String?
+  city              String?
+  state             String?
+  pincode           String?
+  country           String?
+}
+
+enum OnboardingStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model TenantSubscription {
+  id              String   @id @default(uuid())
+  tenantId        String
+  planId          String
+  status          String
+  startsAt        DateTime
+  endsAt          DateTime
+  cashfreeOrderId String   @unique
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  plan            Plan     @relation(fields: [planId], references: [id])
+}
+
+model Plan {
+  id           String   @id @default(uuid())
+  name         String
+  price        Int // In paise or smallest currency unit
+  durationDays Int // E.g., 30 for monthly, 365 for yearly
+  description  String?
+  features     Json? // Optional: store structured features per plan
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  subscriptions TenantSubscription[]
+}
+
+model CashfreeOrder {
+  id               String   @id @default(uuid())
+  cfOrderId        String   @unique @map("cf_order_id")
+  entity           String   @default("order")
+  orderAmount      Float    @map("order_amount")
+  orderCurrency    String   @default("INR") @map("order_currency")
+  orderStatus      String   @map("order_status")
+  paymentSessionId String   @map("payment_session_id")
+  orderExpiryTime  DateTime @map("order_expiry_time")
+  createdAt        DateTime @default(now()) @map("created_at")
+  orderNote        String?  @map("order_note")
+  orderTags        String?  @map("order_tags")
+
+  // Customer details as JSON
+  customerDetails Json @map("customer_details")
+
+  // Order meta as JSON
+  orderMeta Json @map("order_meta")
+
+  // Products as JSON
+  products Json @map("products")
+
+  // Other optional fields as JSON
+  cartDetails  Json? @map("cart_details")
+  terminalData Json? @map("terminal_data")
+  orderSplits  Json? @map("order_splits")
+
+  @@map("cashfree_orders")
+}
+
+model InventoryItem {
+  id              String           @id @default(uuid())
+  tenantId        String
+  name            String
+  description     String?
+  unitPrice       Int
+  taxRate         Float?           @default(0)
+  quantity        Int              @default(0) // Stock quantity
+  hsnOrSacCode    String? // Optional: if you want default HSN/SAC
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  //relations
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  salesOrderItems SalesOrderItem[]
+  invoiceItems    InvoiceItem[]
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  email     String
+  phone     String?
+  address   String?
+  createdAt DateTime @default(now())
+  deleted   Boolean  @default(false)
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id])
+  salesOrders SalesOrder[]
+  invoices    Invoice[]
+
+  @@unique([tenantId, email]) // Ensure unique email per tenant
+}
+
+model SalesOrder {
+  id            String           @id @default(uuid())
+  orderNumber   Int              @default(1)
+  tenantId      String
+  customerId    String
+  status        SalesOrderStatus @default(PENDING)
+  notes         String?
+  terms         String?
+  placeOfSupply String?
+  subTotal      Int              @default(0) // Total before tax
+  taxAmount     Int              @default(0) // Total tax amount
+  total         Int              @default(0) // Total after tax
+  createdAt     DateTime         @default(now())
+  //relations
+  tenant        Tenant           @relation(fields: [tenantId], references: [id])
+  customer      Customer         @relation(fields: [customerId], references: [id])
+  items         SalesOrderItem[]
+  invoice       Invoice?
+}
+
+model SalesOrderItem {
+  id              String        @id @default(uuid())
+  salesOrderId    String
+  inventoryItemId String
+  quantity        Int
+  unitPrice       Int // Can override inventory item price
+  taxRate         Float? // Can override inventory item tax rate
+  hsnOrSacCode    String? // NEW: HSN/SAC Code
+  amount          Int // NEW: Total per line item, quantity * price
+  // relations
+  salesOrder      SalesOrder    @relation(fields: [salesOrderId], references: [id])
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber Int           @default(10000)
+  tenantId      String
+  customerId    String
+  salesOrderId  String? // nullable for direct invoice
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime
+  status        InvoiceStatus @default(PENDING)
+  notes         String?
+  terms         String?
+
+  tenant     Tenant        @relation(fields: [tenantId], references: [id])
+  customer   Customer      @relation(fields: [customerId], references: [id])
+  salesOrder SalesOrder?   @relation(fields: [salesOrderId], references: [id])
+  items      InvoiceItem[]
+
+  @@unique([salesOrderId])
+}
+
+model InvoiceItem {
+  id              String @id @default(uuid())
+  invoiceId       String
+  inventoryItemId String
+  quantity        Int
+  unitPrice       Int // Can override inventory item price
+  taxRate         Float? // Can override inventory item tax rate
+
+  invoice       Invoice       @relation(fields: [invoiceId], references: [id])
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id])
+}
+
+enum SalesOrderStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model TenantCounter {
+  id                String @id @default(uuid())
+  tenantId          String @unique
+  nextInvoiceNumber Int    @default(1000)
+  nextOrderNumber   Int    @default(1000)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+}

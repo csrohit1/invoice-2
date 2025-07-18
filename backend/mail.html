@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Invoice - INV-0001</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      /* Include all CSS styles as-is from your original code */
+      /* ... (same CSS as in your original content) ... */
+    </style>
+  </head>
+  <body>
+    <table class="container">
+      <!-- Header -->
+      <tr>
+        <td class="header">
+          <table style="width: 100%; border-collapse: collapse">
+            <tr>
+              <td style="width: 200px; vertical-align: top">
+                <div class="logo-box">
+                  <div style="text-align: center">
+                    <div class="logo-circle">
+                      <!-- Logo or fallback -->
+                      <span>I</span>
+                    </div>
+                    <div class="company-title">Tenant Company</div>
+                    <div class="company-sub">Subtitle or Tagline</div>
+                  </div>
+                </div>
+              </td>
+              <td style="text-align: right; vertical-align: top">
+                <h1 class="invoice-title">INVOICE</h1>
+                <p class="invoice-number">Invoice# INV-0001</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Company Information -->
+      <tr>
+        <td class="company-info">
+          <h2>Tenant Company Subtitle or Tagline</h2>
+          <p>
+            <strong>Company ID :</strong> CMP123456<br />
+            123, Business Street,<br />
+            Industrial Area, Sector 12<br />
+            Jaipur Rajasthan 302001<br />
+            India<br />
+            <strong>GSTIN:</strong> 29ABCDE1234F2Z5
+          </p>
+        </td>
+      </tr>
+
+      <!-- Bill To and Invoice Date -->
+      <tr>
+        <td class="billto-date">
+          <table style="width: 100%; border-collapse: collapse">
+            <tr>
+              <td style="width: 50%; vertical-align: top">
+                <h3 class="billto">Bill To</h3>
+                <p class="billto-info">Customer Name</p>
+                <p class="billto-info">Place Of Supply: Rajasthan</p>
+              </td>
+              <td style="text-align: right; vertical-align: top">
+                <p class="invoice-date">
+                  <strong>Invoice Date :</strong> 17 July 2025
+                </p>
+                <p class="due-date"><strong>Due Date :</strong> 24 July 2025</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Items Table -->
+      <tr>
+        <td style="padding: 0 30px 30px 30px">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Item & Description</th>
+                <th>HSN/SAC</th>
+                <th class="text-center">Qty</th>
+                <th class="text-right">Price</th>
+                <th class="text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Product A</td>
+                <td class="text-center">998313</td>
+                <td class="text-center">2</td>
+                <td class="text-right">₹500.00</td>
+                <td class="text-right">₹1,000.00</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>Product B</td>
+                <td class="text-center">998314</td>
+                <td class="text-center">1</td>
+                <td class="text-right">₹750.00</td>
+                <td class="text-right">₹750.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Totals -->
+      <tr>
+        <td class="totals">
+          <table class="totals-table">
+            <tr>
+              <td style="width: 70%"></td>
+              <td style="width: 30%">
+                <table style="width: 100%; border-collapse: collapse">
+                  <tr>
+                    <td><strong>Sub Total</strong></td>
+                    <td style="padding-left: 20px">
+                      <strong>₹1,750.00</strong>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Tax</td>
+                    <td style="padding-left: 20px">₹315.00</td>
+                  </tr>
+                  <tr>
+                    <td class="total-label"><strong>Total</strong></td>
+                    <td class="total-value"><strong>₹2,065.00</strong></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Payment Notice -->
+      <tr>
+        <td>
+          <div class="payment-notice">
+            ⚠️ Payment Due: Please ensure payment is made by 24 July 2025 to
+            avoid late fees
+          </div>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,816 @@
+{
+	"info": {
+		"_postman_id": "7ffa281e-e5d6-473d-b92d-df865c6a2973",
+		"name": "Invoice and Billing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19916979"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Create auth",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\":\"vaibhav.prajapat.7725@gmail.com\",\n    \"password\":\"vaibhav@7725\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/auth/create",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.environment.set(\"access_token\", jsonData.data.accessToken)",
+									"pm.environment.set(\"refresh_token\", jsonData.data.refreshToken)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"owner@sirus.com\",\n    \"password\": \"sirus@owner\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/auth/login",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify account",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/auth/verify-email/b632ec20da6242d19f843ee8997a32d6",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"verify-email",
+								"b632ec20da6242d19f843ee8997a32d6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Request password reset",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/auth/request-password-reset",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"request-password-reset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/auth/reset-password",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"reset-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/auth/change-current-password",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"change-current-password"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tenant",
+			"item": [
+				{
+					"name": "Onboard",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"companyName\": \"Sirus Infotech Pvt Ltd\",\n  \"email\": \"owner@sirus.com\",\n  \"password\":\"sirus@owner\",\n  \"phone\": \"9571421300\",\n  \"gstNumber\": \"29ABCDQ1234F2Z5\",\n  \"contactPersonName\": \"Vaibhav Prajapat\",\n  \"supportEmail\": \"support@sirusinfo.com\",\n  \"website\": \"https://sirusinfotech.com\",\n  \"addressLine1\": \"123, MG Road\",\n  \"addressLine2\": \"Near City Center\",\n  \"city\": \"Bangalore\",\n  \"state\": \"Karnataka\",\n  \"pincode\": \"560001\",\n  \"country\": \"India\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/auth/submit-tenant-details",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"submit-tenant-details"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add staff user",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/tenant/create-user",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"tenant",
+								"create-user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/tenant/get-users",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"tenant",
+								"get-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update user",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/tenant/update-user",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"tenant",
+								"update-user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/tenant/delete-user",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"tenant",
+								"delete-user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update tenant details",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/tenant/update-tenant-settings",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"tenant",
+								"update-tenant-settings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify onboarding session",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/auth/tenant/verify-email/5b94153c-335f-4ae9-ba48-88b5dd9097b9",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"auth",
+								"tenant",
+								"verify-email",
+								"5b94153c-335f-4ae9-ba48-88b5dd9097b9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Plans",
+			"item": [
+				{
+					"name": "Create plan",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Starter Plan\",\n  \"price\": 99,                  \n  \"durationDays\": 30,\n  \"description\": \"Great for small businesses with basic needs\",\n  \"features\": {\n    \"invoicesPerMonth\": 100,\n    \"usersIncluded\": 3,\n    \"support\": \"Email only\",\n    \"gstEnabled\": true\n  }\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/plans",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"plans"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update plan",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Initial Plan\"\n  \n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/plans/b632ec20-da62-42d1-9f84-3ee8997a32d6",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"plans",
+								"b632ec20-da62-42d1-9f84-3ee8997a32d6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete plan",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Initial Plan\"\n  \n}\n"
+						},
+						"url": {
+							"raw": "{{basePath}}/plans/b632ec20-da62-42d1-9f84-3ee8997a32d6",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"plans",
+								"b632ec20-da62-42d1-9f84-3ee8997a32d6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch plans",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/plans",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"plans"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Subscription",
+			"item": [
+				{
+					"name": "Request payment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"email\":\"owner@sirus.com\",\n   \"planId\":\"0cd83796-3481-45c6-893b-1b9617d8ddd6\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/subscriptions/init-payment",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"subscriptions",
+								"init-payment"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pay",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Hnadle Confirmation",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"orderId\":\"cf_order_eed9bd64-8590-4219-a776-d207ab308037\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/subscriptions/confirm-payment",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"subscriptions",
+								"confirm-payment"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sales order",
+			"item": [
+				{
+					"name": "Create sales order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"customerId\": \"a1555dec-b3b3-44e8-b129-643163b18dcf\",\n  \"notes\": \"Handle with care\",\n  \"terms\": \"Net 30 days\",\n  \"placeOfSupply\": \"Rajasthan (08)\",\n  \"items\": [\n    {\n      \"inventoryItemId\": \"a934549c-9aed-4a8e-b954-84bfbc10f61a\",\n      \"unitPrice\": 2199,\n      \"quantity\": 2,\n      \"taxRate\": 0,\n      \"hsnOrSacCode\": \"998239\"\n    },\n    {\n      \"inventoryItemId\": \"e1d013f8-ef1a-4080-9fa4-871cebcdf697\",\n      \"unitPrice\": 2499,\n      \"quantity\": 1,\n      \"taxRate\": 0,\n      \"hsnOrSacCode\": \"998239\"\n    }\n  ]\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/sales-order/",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"sales-order",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update sales order",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"items\": [\n    {\n      \"inventoryItemId\": \"a934549c-9aed-4a8e-b954-84bfbc10f61a\",\n      \"unitPrice\": 2399,\n      \"quantity\": 5,\n      \"taxRate\": 18,\n      \"hsnOrSacCode\": \"998239\"\n    }\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/sales-order/91548134-4e67-4fd5-bede-232ad2f6d498",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"sales-order",
+								"91548134-4e67-4fd5-bede-232ad2f6d498"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Upate Sales Order Status",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/sales-order/91548134-4e67-4fd5-bede-232ad2f6d498/status/accept",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"sales-order",
+								"91548134-4e67-4fd5-bede-232ad2f6d498",
+								"status",
+								"accept"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get sales order",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/sales-order/91548134-4e67-4fd5-bede-232ad2f6d498",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"sales-order",
+								"91548134-4e67-4fd5-bede-232ad2f6d498"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Customer",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main St, New York, NY\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/customers",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/customers",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update customer",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n   \"name\":\"John D\" \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/customers/a1555dec-b3b3-44e8-b129-643163b18dcf",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"customers",
+								"a1555dec-b3b3-44e8-b129-643163b18dcf"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get customer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/customers/a1555dec-b3b3-44e8-b129-643163b18dcf",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"customers",
+								"a1555dec-b3b3-44e8-b129-643163b18dcf"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inventory item",
+			"item": [
+				{
+					"name": "Create inventory item",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Gold Widget\",\n  \"description\": \"Good-quality widget with advanced features\",\n  \"unitPrice\": 2199\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/inventory-item",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"inventory-item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List inventory item",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Premium Widget\",\n  \"description\": \"High-quality widget with advanced features\",\n  \"unitPrice\": 2499\n}"
+						},
+						"url": {
+							"raw": "{{basePath}}/inventory-item",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"inventory-item"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get inventory item",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Premium Widget\",\n  \"description\": \"High-quality widget with advanced features\",\n  \"unitPrice\": 2499\n}"
+						},
+						"url": {
+							"raw": "{{basePath}}/inventory-item/a934549c-9aed-4a8e-b954-84bfbc10f61a",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"inventory-item",
+								"a934549c-9aed-4a8e-b954-84bfbc10f61a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update inventory item",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Gold Widget plus\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{basePath}}/inventory-item/a934549c-9aed-4a8e-b954-84bfbc10f61a",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"inventory-item",
+								"a934549c-9aed-4a8e-b954-84bfbc10f61a"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{basePath}}/inventory-item/search?q=g",
+							"host": [
+								"{{basePath}}"
+							],
+							"path": [
+								"inventory-item",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "g"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
