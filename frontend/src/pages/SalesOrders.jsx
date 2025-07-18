@@ -1,12 +1,26 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { PlusIcon, EyeIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, EyeIcon, CheckIcon, XMarkIcon, TrashIcon } from '@heroicons/react/24/outline'
 import api from '../services/api'
 import Modal from '../components/Modal'
 
 const SalesOrders = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [viewingOrder, setViewingOrder] = useState(null)
+  const [formData, setFormData] = useState({
+    customerId: '',
+    notes: '',
+    terms: '',
+    placeOfSupply: '',
+    items: []
+  })
+  const [currentItem, setCurrentItem] = useState({
+    inventoryItemId: '',
+    quantity: 1,
+    unitPrice: '',
+    taxRate: '',
+    hsnOrSacCode: ''
+  })
 
   const queryClient = useQueryClient()
 
@@ -25,12 +39,127 @@ const SalesOrders = () => {
     queryFn: () => api.get('/inventory-item').then(res => res.data.data)
   })
 
+  const createMutation = useMutation({
+    mutationFn: (data) => api.post('/sales-order', data),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['sales-orders'])
+      setIsModalOpen(false)
+      resetForm()
+    }
+  })
+
   const updateStatusMutation = useMutation({
     mutationFn: ({ id, status }) => api.patch(`/sales-order/${id}/status/${status}`),
     onSuccess: () => {
       queryClient.invalidateQueries(['sales-orders'])
     }
   })
+
+  const resetForm = () => {
+    setFormData({
+      customerId: '',
+      notes: '',
+      terms: '',
+      placeOfSupply: '',
+      items: []
+    })
+    setCurrentItem({
+      inventoryItemId: '',
+      quantity: 1,
+      unitPrice: '',
+      taxRate: '',
+      hsnOrSacCode: ''
+    })
+  }
+
+  const handleAddItem = () => {
+    if (!currentItem.inventoryItemId) {
+      alert('Please select an inventory item')
+      return
+    }
+
+    const selectedInventoryItem = inventory?.find(item => item.id === currentItem.inventoryItemId)
+    if (!selectedInventoryItem) return
+
+    const unitPrice = currentItem.unitPrice ? 
+      Math.round(parseFloat(currentItem.unitPrice) * 100) : 
+      selectedInventoryItem.unitPrice
+
+    const taxRate = currentItem.taxRate !== '' ? 
+      parseFloat(currentItem.taxRate) : 
+      (selectedInventoryItem.taxRate || 0)
+
+    const amount = currentItem.quantity * unitPrice
+
+    const newItem = {
+      inventoryItemId: currentItem.inventoryItemId,
+      quantity: parseInt(currentItem.quantity),
+      unitPrice: unitPrice,
+      taxRate: taxRate,
+      hsnOrSacCode: currentItem.hsnOrSacCode || selectedInventoryItem.hsnOrSacCode || '',
+      amount: amount,
+      // For display purposes
+      name: selectedInventoryItem.name
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, newItem]
+    }))
+
+    setCurrentItem({
+      inventoryItemId: '',
+      quantity: 1,
+      unitPrice: '',
+      taxRate: '',
+      hsnOrSacCode: ''
+    })
+  }
+
+  const handleRemoveItem = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleInventoryItemChange = (inventoryItemId) => {
+    const selectedItem = inventory?.find(item => item.id === inventoryItemId)
+    if (selectedItem) {
+      setCurrentItem(prev => ({
+        ...prev,
+        inventoryItemId,
+        unitPrice: (selectedItem.unitPrice / 100).toString(),
+        taxRate: selectedItem.taxRate?.toString() || '',
+        hsnOrSacCode: selectedItem.hsnOrSacCode || ''
+      }))
+    }
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    
+    if (formData.items.length === 0) {
+      alert('Please add at least one item')
+      return
+    }
+
+    const submitData = {
+      customerId: formData.customerId,
+      notes: formData.notes || undefined,
+      terms: formData.terms || undefined,
+      placeOfSupply: formData.placeOfSupply || undefined,
+      items: formData.items.map(item => ({
+        inventoryItemId: item.inventoryItemId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        taxRate: item.taxRate,
+        hsnOrSacCode: item.hsnOrSacCode
+      }))
+    }
+
+    createMutation.mutate(submitData)
+  }
 
   const getStatusBadge = (status) => {
     const badges = {
@@ -47,6 +176,12 @@ const SalesOrders = () => {
 
   const formatCurrency = (amount) => {
     return `₹${(amount / 100).toFixed(2)}`
+  }
+
+  const calculateTotal = () => {
+    const subTotal = formData.items.reduce((sum, item) => sum + item.amount, 0)
+    const taxAmount = formData.items.reduce((sum, item) => sum + (item.amount * item.taxRate / 100), 0)
+    return { subTotal, taxAmount, total: subTotal + taxAmount }
   }
 
   if (isLoading) {
@@ -145,6 +280,232 @@ const SalesOrders = () => {
           </table>
         </div>
       </div>
+
+      {/* Create Order Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false)
+          resetForm()
+        }}
+        title="Create Sales Order"
+        size="xl"
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Customer Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Customer *</label>
+            <select
+              required
+              className="input-field mt-1"
+              value={formData.customerId}
+              onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+            >
+              <option value="">Select a customer</option>
+              {customers?.map((customer) => (
+                <option key={customer.id} value={customer.id}>
+                  {customer.name} ({customer.email})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Order Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Place of Supply</label>
+              <input
+                type="text"
+                className="input-field mt-1"
+                value={formData.placeOfSupply}
+                onChange={(e) => setFormData({ ...formData, placeOfSupply: e.target.value })}
+                placeholder="e.g., Maharashtra"
+              />
+            </div>
+          </div>
+
+          {/* Add Item Section */}
+          <div className="border-t pt-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Add Items</h3>
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700">Item *</label>
+                <select
+                  className="input-field mt-1"
+                  value={currentItem.inventoryItemId}
+                  onChange={(e) => handleInventoryItemChange(e.target.value)}
+                >
+                  <option value="">Select an item</option>
+                  {inventory?.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name} - ₹{(item.unitPrice / 100).toFixed(2)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Quantity *</label>
+                <input
+                  type="number"
+                  min="1"
+                  className="input-field mt-1"
+                  value={currentItem.quantity}
+                  onChange={(e) => setCurrentItem({ ...currentItem, quantity: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Unit Price (₹)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  className="input-field mt-1"
+                  value={currentItem.unitPrice}
+                  onChange={(e) => setCurrentItem({ ...currentItem, unitPrice: e.target.value })}
+                  placeholder="Auto-filled"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Tax Rate (%)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  className="input-field mt-1"
+                  value={currentItem.taxRate}
+                  onChange={(e) => setCurrentItem({ ...currentItem, taxRate: e.target.value })}
+                  placeholder="Auto-filled"
+                />
+              </div>
+              <div>
+                <button
+                  type="button"
+                  onClick={handleAddItem}
+                  className="btn-primary w-full"
+                >
+                  Add Item
+                </button>
+              </div>
+            </div>
+            
+            {/* HSN/SAC Code */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700">HSN/SAC Code</label>
+              <input
+                type="text"
+                className="input-field mt-1 max-w-xs"
+                value={currentItem.hsnOrSacCode}
+                onChange={(e) => setCurrentItem({ ...currentItem, hsnOrSacCode: e.target.value })}
+                placeholder="Auto-filled from item"
+              />
+            </div>
+          </div>
+
+          {/* Items List */}
+          {formData.items.length > 0 && (
+            <div>
+              <h4 className="text-md font-medium text-gray-900 mb-3">Order Items</h4>
+              <div className="border rounded-lg overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">HSN/SAC</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tax</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {formData.items.map((item, index) => (
+                      <tr key={index}>
+                        <td className="px-4 py-2 text-sm text-gray-900">{item.name}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{item.hsnOrSacCode || '-'}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{item.quantity}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{formatCurrency(item.unitPrice)}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{item.taxRate}%</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">{formatCurrency(item.amount)}</td>
+                        <td className="px-4 py-2 text-sm text-gray-500">
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveItem(index)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Order Total */}
+              <div className="mt-4 bg-gray-50 p-4 rounded-lg">
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Subtotal:</span>
+                  <span>{formatCurrency(calculateTotal().subTotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Tax:</span>
+                  <span>{formatCurrency(calculateTotal().taxAmount)}</span>
+                </div>
+                <div className="flex justify-between text-lg font-semibold border-t pt-2">
+                  <span>Total:</span>
+                  <span>{formatCurrency(calculateTotal().total)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Notes and Terms */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Notes</label>
+              <textarea
+                className="input-field mt-1"
+                rows={3}
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                placeholder="Any special instructions or notes"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Terms</label>
+              <textarea
+                className="input-field mt-1"
+                rows={3}
+                value={formData.terms}
+                onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
+                placeholder="Payment terms and conditions"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={() => {
+                setIsModalOpen(false)
+                resetForm()
+              }}
+              className="btn-secondary"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={createMutation.isLoading || formData.items.length === 0}
+              className="btn-primary disabled:opacity-50"
+            >
+              {createMutation.isLoading ? 'Creating...' : 'Create Order'}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* View Order Modal */}
       <Modal
@@ -250,19 +611,6 @@ const SalesOrders = () => {
             )}
           </div>
         )}
-      </Modal>
-
-      {/* Create Order Modal Placeholder */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Create Sales Order"
-        size="lg"
-      >
-        <div className="text-center py-8">
-          <p className="text-gray-500">Sales order creation form will be implemented here.</p>
-          <p className="text-sm text-gray-400 mt-2">This will include customer selection, item selection, and pricing.</p>
-        </div>
       </Modal>
     </div>
   )

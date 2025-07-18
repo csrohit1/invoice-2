@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api/v1',
+  baseURL: 'https://invoice-server-3ypc.onrender.com/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,6 +35,7 @@ const mockData = {
       unitPrice: 249900, // in paise
       taxRate: 18,
       quantity: 50,
+      hsnOrSacCode: '998313',
       createdAt: new Date().toISOString()
     },
     {
@@ -44,6 +45,7 @@ const mockData = {
       unitPrice: 149900, // in paise
       taxRate: 18,
       quantity: 100,
+      hsnOrSacCode: '998314',
       createdAt: new Date().toISOString()
     }
   ],
@@ -57,6 +59,8 @@ const mockData = {
       taxAmount: 89964,
       total: 589764,
       placeOfSupply: 'Maharashtra',
+      notes: 'Handle with care',
+      terms: 'Net 30 days',
       createdAt: new Date().toISOString(),
       items: [
         {
@@ -80,6 +84,8 @@ const mockData = {
       status: 'PENDING',
       issueDate: new Date().toISOString(),
       dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+      notes: 'Thank you for your business',
+      terms: 'Payment due within 14 days',
       items: [
         {
           id: 'invoice-item-1',
@@ -128,8 +134,8 @@ api.interceptors.response.use(
     const originalRequest = error.config
     
     // Handle mock responses in test mode
-    if (originalRequest.isTestMode && error.code === 'ERR_NETWORK') {
-      const mockResponse = mockResponses[originalRequest.url]
+    if (originalRequest.isTestMode && (error.code === 'ERR_NETWORK' || error.response?.status >= 500)) {
+      const mockResponse = mockResponses[originalRequest.url?.replace(/\/[^/]*$/, '')]
       if (mockResponse) {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500))
@@ -150,7 +156,22 @@ api.interceptors.response.use(
 // Mock CRUD operations for test mode
 const mockCrud = {
   create: (collection, data) => {
-    const newItem = { ...data, id: `${collection}-${Date.now()}`, createdAt: new Date().toISOString() }
+    const newItem = { 
+      ...data, 
+      id: `${collection}-${Date.now()}`, 
+      createdAt: new Date().toISOString(),
+      ...(collection === 'salesOrders' && {
+        orderNumber: mockData.salesOrders.length + 1001,
+        status: 'PENDING',
+        subTotal: data.items?.reduce((sum, item) => sum + item.amount, 0) || 0,
+        taxAmount: data.items?.reduce((sum, item) => sum + (item.amount * (item.taxRate || 0) / 100), 0) || 0,
+        total: (data.items?.reduce((sum, item) => sum + item.amount, 0) || 0) + (data.items?.reduce((sum, item) => sum + (item.amount * (item.taxRate || 0) / 100), 0) || 0)
+      }),
+      ...(collection === 'invoices' && {
+        invoiceNumber: mockData.invoices.length + 10001,
+        status: 'PENDING'
+      })
+    }
     mockData[collection].push(newItem)
     return { data: { data: newItem } }
   },
@@ -193,16 +214,18 @@ api.patch = async function(url, data, config) {
   if (localStorage.getItem('testMode') === 'true') {
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    const id = url.split('/').pop()
-    if (url.includes('/customers/')) return mockCrud.update('customers', id, data)
-    if (url.includes('/inventory-item/')) return mockCrud.update('inventory', id, data)
+    const pathParts = url.split('/')
+    const id = pathParts[pathParts.length - 1]
+    
+    if (url.includes('/customers/') && !url.includes('/status/')) return mockCrud.update('customers', id, data)
+    if (url.includes('/inventory-item/') && !url.includes('/status/')) return mockCrud.update('inventory', id, data)
     if (url.includes('/sales-order/') && url.includes('/status/')) {
-      const orderId = url.split('/')[2]
+      const orderId = pathParts[pathParts.length - 3]
       const status = url.includes('accept') ? 'ACCEPTED' : 'REJECTED'
       return mockCrud.update('salesOrders', orderId, { status })
     }
     if (url.includes('/invoice/') && url.includes('/status/')) {
-      const invoiceId = url.split('/')[2]
+      const invoiceId = pathParts[pathParts.length - 3]
       const status = 'PAID'
       return mockCrud.update('invoices', invoiceId, { status })
     }

@@ -51,12 +51,27 @@ export const AuthProvider = ({ children }) => {
         setUser(mockUser)
         setIsTestMode(true)
       } else {
-        // In real mode, you would verify the token with the backend
-        setUser({ token })
+        // In real mode, verify token and get user info
+        verifyToken(token)
       }
     }
     setLoading(false)
   }, [])
+
+  const verifyToken = async (token) => {
+    try {
+      // You can add a verify endpoint call here if needed
+      // For now, we'll assume the token is valid if it exists
+      setUser({ token })
+      setIsTestMode(false)
+    } catch (error) {
+      // Token is invalid, clear it
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('testMode')
+      setUser(null)
+    }
+  }
 
   const login = async (email, password) => {
     try {
@@ -87,9 +102,10 @@ export const AuthProvider = ({ children }) => {
       navigate('/')
       return { success: true }
     } catch (error) {
+      console.error('Login error:', error)
       return { 
         success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        error: error.response?.data?.message || error.message || 'Login failed. Please check your credentials.' 
       }
     }
   }

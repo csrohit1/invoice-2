@@ -12,7 +12,8 @@ const Inventory = () => {
     description: '',
     unitPrice: '',
     taxRate: '',
-    quantity: ''
+    quantity: '',
+    hsnOrSacCode: ''
   })
 
   const queryClient = useQueryClient()
@@ -48,7 +49,7 @@ const Inventory = () => {
   })
 
   const resetForm = () => {
-    setFormData({ name: '', description: '', unitPrice: '', taxRate: '', quantity: '' })
+    setFormData({ name: '', description: '', unitPrice: '', taxRate: '', quantity: '', hsnOrSacCode: '' })
     setEditingItem(null)
   }
 
@@ -58,7 +59,8 @@ const Inventory = () => {
       ...formData,
       unitPrice: Math.round(parseFloat(formData.unitPrice) * 100), // Convert to paise
       taxRate: formData.taxRate ? parseFloat(formData.taxRate) : 0,
-      quantity: parseInt(formData.quantity) || 0
+      quantity: parseInt(formData.quantity) || 0,
+      hsnOrSacCode: formData.hsnOrSacCode || undefined
     }
     
     if (editingItem) {
@@ -75,7 +77,8 @@ const Inventory = () => {
       description: item.description || '',
       unitPrice: (item.unitPrice / 100).toString(), // Convert from paise
       taxRate: item.taxRate?.toString() || '',
-      quantity: item.quantity?.toString() || '0'
+      quantity: item.quantity?.toString() || '0',
+      hsnOrSacCode: item.hsnOrSacCode || ''
     })
     setIsModalOpen(true)
   }
@@ -117,6 +120,7 @@ const Inventory = () => {
                 <th className="px-6 py-3 text-left">Unit Price</th>
                 <th className="px-6 py-3 text-left">Tax Rate</th>
                 <th className="px-6 py-3 text-left">Quantity</th>
+                <th className="px-6 py-3 text-left">HSN/SAC</th>
                 <th className="px-6 py-3 text-left">Actions</th>
               </tr>
             </thead>
@@ -137,6 +141,9 @@ const Inventory = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {item.quantity || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.hsnOrSacCode || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex space-x-2">
@@ -160,7 +167,7 @@ const Inventory = () => {
               ))}
               {items?.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
                     No inventory items found. Add your first item to get started.
                   </td>
                 </tr>
@@ -237,6 +244,16 @@ const Inventory = () => {
               value={formData.quantity}
               onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
               placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">HSN/SAC Code</label>
+            <input
+              type="text"
+              className="input-field mt-1"
+              value={formData.hsnOrSacCode}
+              onChange={(e) => setFormData({ ...formData, hsnOrSacCode: e.target.value })}
+              placeholder="Enter HSN or SAC code"
             />
           </div>
           <div className="flex justify-end space-x-3 pt-4">
